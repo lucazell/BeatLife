@@ -1,59 +1,99 @@
-let mic;
-let vol = 0;
+class Particle {
+        constructor() {
+          this.reset();
+        }
 
-function setup() {
-  createCanvas(400, 400);
-  angleMode(DEGREES);
-  noFill();
+        /** Stellt Partikel am Rand zufällig neu auf **/
+        reset() {
+          // Position (leicht außerhalb, sodass sie ins Bild fliegen können)
+          const side = floor(random(4));
+          switch (side) {
+            case 0: // links
+              this.pos = createVector(-10, random(height));
+              break;
+            case 1: // oben
+              this.pos = createVector(random(width), -10);
+              break;
+            case 2: // rechts
+              this.pos = createVector(width + 10, random(height));
+              break;
+            default: // unten
+              this.pos = createVector(random(width), height + 10);
+          }
+          // Geschwindigkeit zeigt grob zur Mitte
+          const toCenter = p5.Vector.sub(createVector(width / 2, height / 2), this.pos);
+          this.vel = toCenter.setMag(random(0.5, 2));
+          // Leichte zufällige Abweichung
+          this.vel.rotate(random(-PI / 6, PI / 6));
+          this.size = random(2, 6);
+          this.alpha = random(80, 200);
+        }
 
-  // Mikrofon aktivieren
-  mic = new p5.AudioIn();
-  mic.start();
-}
+        update() {
+          // Mausanziehung/Abstoßung
+          const mouse = createVector(mouseX, mouseY);
+          if (mouseX >= 0 && mouseY >= 0) {
+            const d = p5.Vector.dist(this.pos, mouse);
+            if (d < 120) {
+              const force = p5.Vector.sub(this.pos, mouse) // weg von Maus
+                .setMag(map(d, 0, 120, 0.6, 0));
+              this.vel.add(force);
+            }
+          }
 
-function draw() {
-  background(255);
+          this.pos.add(this.vel);
 
-  // Mikrofonlautstärke auslesen
-  vol = mic.getLevel();
-  let volMapped = map(vol, 0, 0.1, 0.8, 2); // Lautstärke auf Skalierungsfaktor mappen
+          // Wenn Partikel aus dem Bild fliegt → neu starten
+          if (
+            this.pos.x < -20 ||
+            this.pos.x > width + 20 ||
+            this.pos.y < -20 ||
+            this.pos.y > height + 20
+          ) {
+            this.reset();
+          }
+        }
 
-  // Farbe von hellgrau (200,200,200) bis rot (255,0,0)
-  let constrainedVol = constrain(vol, 0, 0.1);
-  let r = map(constrainedVol, 0, 0.1, 200, 255);
-  let g = map(constrainedVol, 0, 0.1, 200, 0);
-  let b = map(constrainedVol, 0, 0.1, 200, 0);
-  stroke(r, g, b);
-  strokeWeight(2);
+        show() {
+          noStroke();
+          fill(200, this.alpha);
+          circle(this.pos.x, this.pos.y, this.size);
+        }
+      }
 
-  let baseSize = 40 * volMapped;
-  let cols = 4;
-  let rows = 5;
-  let spacingX = width / cols;
-  let spacingY = height / rows;
+      // Globale Variablen
+      const NUM = 250;
+      let particles = [];
 
-  for (let y = 0; y < rows; y++) {
-    for (let x = 0; x < cols; x++) {
-      let offsetX = (y % 2 === 0) ? 0 : spacingX / 2;
-      let cx = x * spacingX + offsetX;
-      let cy = y * spacingY;
-      drawOrganicFlower(cx, cy, baseSize);
-    }
-  }
-}
+      function setup() {
+        createCanvas(windowWidth, windowHeight);
+        for (let i = 0; i < NUM; i++) particles.push(new Particle());
+      }
 
-function drawOrganicFlower(x, y, r) {
-  push();
-  translate(x, y);
+      function draw() {
+        // Transparenter Hintergrund erzeugt einen Schweif-Effekt
+        background(13, 13, 13, 25);
 
-  for (let i = 0; i < 4; i++) {
-    let angle = i * 90;
-    let t = millis() / 1000;
+        // Partikel & Linien
+        stroke(255, 40);
+        for (let i = 0; i < particles.length; i++) {
+          const p1 = particles[i];
+          p1.update();
+          p1.show();
 
-    let dx = cos(angle) * r / 2 + map(noise(t + i * 10 + x * 0.01), 0, 1, -3, 3);
-    let dy = sin(angle) * r / 2 + map(noise(t + i * 20 + y * 0.01), 0, 1, -3, 3);
-    ellipse(dx, dy, r);
-  }
+          // Verbinde nahgelegene Partikel optisch
+          for (let j = i + 1; j < particles.length && j < i + 15; j++) {
+            // Begrenzung i+15 → Performance
+            const p2 = particles[j];
+            const d = dist(p1.pos.x, p1.pos.y, p2.pos.x, p2.pos.y);
+            if (d < 90) {
+              strokeWeight(1 - d / 90);
+              line(p1.pos.x, p1.pos.y, p2.pos.x, p2.pos.y);
+            }
+          }
+        }
+      }
 
-  pop();
-}
+      function windowResized() {
+        resizeCanvas(windowWidth, windowHeight);
+      }

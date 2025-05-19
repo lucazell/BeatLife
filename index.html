@@ -1,17 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sketch4</title>
+    <meta charset="UTF-8" />
+    <title>Seite im Umbau</title>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: #0d0d0d;
+        color: #ffffff;
+        font-family: "Fira Sans", sans-serif;
+      }
+      #overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        pointer-events: none;
+      }
+      #overlay h1 {
+        font-size: 3rem;
+        margin: 0 0 0.3em;
+        letter-spacing: 0.1em;
+      }
+      #overlay p {
+        font-size: 1.2rem;
+        margin: 0;
+        opacity: 0.8;
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+    <script src="sketch.js" defer></script>
   </head>
   <body>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.min.js"></script>
-    <script src="sketch.js"></script>
     <div id="overlay">
       <h1>Seite im Umbau</h1>
-      <p>Wir sind bald zurück
+      <p>Wir sind bald zurück 🚧</p>
     </div>
   </body>
 </html>

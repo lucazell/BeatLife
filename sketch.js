@@ -1,31 +1,31 @@
 /**
- * p5.js Partikel-Animation für Seite im Umbau
+ * p5.js Partikel‑Animation für „Seite im Umbau“
  */
 class Particle {
   constructor() {
     this.reset();
   }
 
+  /** Position & Geschwindigkeit neu setzen */
   reset() {
-    // Partikel am Rand platzieren
+    // Wähle einen Bildschirmrand (0 = links, 1 = oben, 2 = rechts, 3 = unten)
     const side = floor(random(4));
     switch (side) {
       case 0:
-        this.pos = createVector(-10, random(height)); // links
+        this.pos = createVector(-10, random(height));
         break;
       case 1:
-        this.pos = createVector(random(width), -10); // oben
+        this.pos = createVector(random(width), -10);
         break;
       case 2:
-        this.pos = createVector(width + 10, random(height)); // rechts
+        this.pos = createVector(width + 10, random(height));
         break;
       default:
-        this.pos = createVector(random(width), height + 10); // unten
+        this.pos = createVector(random(width), height + 10);
     }
-
-    // Geschwindigkeit grob zur Mitte
-    const center = createVector(width / 2, height / 2);
-    this.vel = p5.Vector.sub(center, this.pos).setMag(random(0.5, 2));
+    // Startrichtung grob zur Mitte
+    const toCenter = p5.Vector.sub(createVector(width / 2, height / 2), this.pos);
+    this.vel = toCenter.setMag(random(0.5, 2));
     this.vel.rotate(random(-PI / 6, PI / 6));
 
     this.size = random(2, 6);
@@ -33,19 +33,20 @@ class Particle {
   }
 
   update() {
-    // Maus-Abstoßung
+    // Maus-Interaktion (Abstoßung)
+    const mouse = createVector(mouseX, mouseY);
     if (mouseX >= 0 && mouseY >= 0) {
-      const mouse = createVector(mouseX, mouseY);
       const d = p5.Vector.dist(this.pos, mouse);
       if (d < 120) {
-        const force = p5.Vector.sub(this.pos, mouse).setMag(map(d, 0, 120, 0.6, 0));
+        const force = p5.Vector.sub(this.pos, mouse) // von Maus weg
+          .setMag(map(d, 0, 120, 0.6, 0));
         this.vel.add(force);
       }
     }
 
     this.pos.add(this.vel);
 
-    // Außerhalb? → neu starten
+    // Wenn Partikel außerhalb → zurücksetzen
     if (
       this.pos.x < -20 ||
       this.pos.x > width + 20 ||
@@ -63,6 +64,7 @@ class Particle {
   }
 }
 
+// Globale Variablen
 const NUM = 250;
 let particles = [];
 
@@ -72,7 +74,8 @@ function setup() {
 }
 
 function draw() {
-  background(13, 13, 13, 25); // Schweif-Effekt
+  // Transparenter Hintergrund für Schweif-Effekt
+  background(13, 13, 13, 25);
 
   stroke(255, 40);
   for (let i = 0; i < particles.length; i++) {
